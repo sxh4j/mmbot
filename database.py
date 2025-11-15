@@ -116,3 +116,20 @@ class Database:
             """) as cursor:
                 rows = await cursor.fetchall()
                 return [dict(row) for row in rows]
+    
+    async def get_all_tickets_count(self):
+        """Get total count of all tickets"""
+        async with aiosqlite.connect(self.db_path) as db:
+            async with db.execute("SELECT COUNT(*) FROM tickets") as cursor:
+                row = await cursor.fetchone()
+                return row[0] if row else 0
+    
+    async def health_check(self):
+        """Check database health for monitoring"""
+        try:
+            async with aiosqlite.connect(self.db_path) as db:
+                await db.execute("SELECT 1")
+                return True
+        except Exception as e:
+            logger.error(f"Database health check failed: {e}")
+            return False
